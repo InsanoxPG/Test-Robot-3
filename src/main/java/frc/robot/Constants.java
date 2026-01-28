@@ -16,4 +16,9 @@ public final class Constants {
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
   }
+
+  public static class CustomSwerveModuleConstants {
+    public static final double kPTurning = 0.1;
+    public static final double maxMotorSpeed = 1; // meters/sec
+  }
 }
