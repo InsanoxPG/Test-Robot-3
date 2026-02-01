@@ -5,12 +5,15 @@
 package frc.robot.subsystems.Swerve;
 
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 
+import dev.doglog.DogLog;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -25,69 +28,83 @@ public class SwerveModule extends SubsystemBase {
   private final TalonFX turnMotor;
   // encoder (absolute + relative)
   private final CANcoder encoder;
-  private final double encoderOffsetRot;
-  private final boolean encoderReversed;
+  private final CANcoderConfiguration encoderConfig;
   // config for motors
   private final TalonFXConfiguration driveMotorConfig;
   private final TalonFXConfiguration turnMotorConfig;
   // pid
   private final PIDController turningPidController;
 
-  public SwerveModule(int driveMotorID, int turnMotorID, InvertedValue driveMotorReversed, InvertedValue turnMotorReversed,
-                      int encoderID, double encoderOffsetRot, boolean encoderReversed, TalonFXConfiguration driveMotorConfig, TalonFXConfiguration turnMotorConfig) {
+  public SwerveModule(int driveMotorID, int turnMotorID, int encoderID, CANcoderConfiguration encoderConfig,
+                      TalonFXConfiguration driveMotorConfig, TalonFXConfiguration turnMotorConfig) {
     // initialize motors                
     driveMotor = new TalonFX(driveMotorID);
     turnMotor = new TalonFX(turnMotorID);
     // configurate motors
     this.driveMotorConfig = driveMotorConfig;
     this.turnMotorConfig = turnMotorConfig;
-    driveMotorConfig.MotorOutput.withInverted(driveMotorReversed);
-    turnMotorConfig.MotorOutput.withInverted(turnMotorReversed);
     // apply configs
     driveMotor.getConfigurator().apply(driveMotorConfig);
     turnMotor.getConfigurator().apply(turnMotorConfig);
-    // initialize relative encoders                        
+    // initialize encoder                        
     encoder = new CANcoder(encoderID);
-    this.encoderOffsetRot = encoderOffsetRot;
-    this.encoderReversed = encoderReversed;
+    this.encoderConfig = encoderConfig;
+    encoder.getConfigurator().apply(encoderConfig);
     // pid
     turningPidController = new PIDController(CustomSwerveModuleConstants.kPTurning, 0, 0);
     turningPidController.enableContinuousInput(-Math.PI, Math.PI);
   }
 
   public double getDrivePosition() {
-    return encoder.getPosition().getValueAsDouble(); // in rotations
+    return toRadians(encoder.getPosition().getValueAsDouble()); // convert to radians
   }
 
   public double getTurningPosition() {
-    return encoder.getPosition().getValueAsDouble(); // in rotations
+    return toRadians(encoder.getPosition().getValueAsDouble()); // convert to radians
   }
 
   public double getDriveVelocity() {
-    return encoder.getVelocity().getValueAsDouble(); // in rotations/sec
+    return toRadians(encoder.getVelocity().getValueAsDouble()); // in radians/sec
   }
 
   public double getTurningVelocity() {
-    return encoder.getVelocity().getValueAsDouble(); // in rot/sec
+    return toRadians(encoder.getVelocity().getValueAsDouble()); // in rads/sec
   }
 
-  public double getAbsoluteEncoderRot() {
-    double pos = encoder.getAbsolutePosition().getValueAsDouble(); // in rot
-    pos -= encoderOffsetRot;
-    pos *= (encoderReversed ? -1.0 : 1.0); // multiply by -1 if reversed
+  public double getAbsoluteEncoderRad() {
+    double pos = toRadians(encoder.getAbsolutePosition().getValueAsDouble()); // in radians
+    pos -= toRadians(encoderConfig.MagnetSensor.MagnetOffset);
+    if (encoderConfig.MagnetSensor.SensorDirection == SensorDirectionValue.Clockwise_Positive) { // multiply by -1 if reversed
+        pos *= 1.0;
+    } else if (encoderConfig.MagnetSensor.SensorDirection == SensorDirectionValue.CounterClockwise_Positive) {
+        pos *= -1.0;
+    }
     return pos;
   }
 
   public SwerveModuleState getState() {
-    return new SwerveModuleState(getDriveVelocity(), Rotation2d.fromRotations(getTurningPosition()));
+    return new SwerveModuleState(getDriveVelocity(), Rotation2d.fromRadians(getTurningPosition()));
   }
 
   public void setState(SwerveModuleState state) {
-    state.optimize(Rotation2d.fromRotations(getTurningPosition()));
-    driveMotor.set(state.speedMetersPerSecond / CustomSwerveModuleConstants.maxMotorSpeed); // why does this work? if state.speed is 100 meter/sec and maxmotorspeed is 5 m/s, then the result will still be 20 m/s, over the limit
+    if (Math.abs(state.speedMetersPerSecond) < 0.001) {
+        stop();
+        return;
+    }
+    state.optimize(Rotation2d.fromRadians(getTurningPosition()));
+    driveMotor.set(state.speedMetersPerSecond / CustomSwerveModuleConstants.maxMotorSpeed); 
+    turnMotor.set(turningPidController.calculate(getTurningPosition(), state.angle.getRadians()));
+    DogLog.log("Swerve Module State as a string", state.toString());
   }
 
+  private void stop() {
+    driveMotor.set(0);
+    turnMotor.set(0);
+  }
 
+  private double toRadians(double number) {
+    return number * 2 * Math.PI;
+  }
 
   @Override
   public void periodic() {
