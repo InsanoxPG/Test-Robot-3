@@ -97,7 +97,7 @@ public class SwerveModule extends SubsystemBase {
     DogLog.log("Swerve Module State as a string", state.toString());
   }
 
-  private void stop() {
+  public void stop() {
     driveMotor.set(0);
     turnMotor.set(0);
   }
