@@ -7,7 +7,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class SwerveModule extends SubsystemBase {
-  /** Creates a new SwerveModule. */
+  // swerve module state is angle, velocity of drive motor + angle, velocity of turn motor
   public SwerveModule() {}
 
   @Override
