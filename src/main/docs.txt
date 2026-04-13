@@ -1,0 +1,5 @@
+TASKS:
+- log swerve module positions and output to doglog 
+- try to run in sim
+- create class for a single motor (done by ctre 😎) ✅
+- create swerve module class

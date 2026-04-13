@@ -34,9 +34,15 @@ public class SwerveModule extends SubsystemBase {
   private final TalonFXConfiguration turnMotorConfig;
   // pid
   private final PIDController turningPidController;
+  // swerve module state
+  private final double driveMotorPos;
+  private final double driveMotorSpeed;
+  private final double turnMotorPos;
+  private final double turnMotorSpeed;
 
   public SwerveModule(int driveMotorID, int turnMotorID, int encoderID, CANcoderConfiguration encoderConfig,
-                      TalonFXConfiguration driveMotorConfig, TalonFXConfiguration turnMotorConfig) {
+                      TalonFXConfiguration driveMotorConfig, TalonFXConfiguration turnMotorConfig,
+                      double driveMotorPos, double driveMotorSpeed, double turnMotorPos, double turnMotorSpeed) {
     // initialize motors                
     driveMotor = new TalonFX(driveMotorID);
     turnMotor = new TalonFX(turnMotorID);
@@ -53,6 +59,11 @@ public class SwerveModule extends SubsystemBase {
     // pid
     turningPidController = new PIDController(CustomSwerveModuleConstants.kPTurning, 0, 0);
     turningPidController.enableContinuousInput(-Math.PI, Math.PI);
+    // swerve module states
+    this.driveMotorPos = 0;
+    this.driveMotorSpeed = 0;
+    this.turnMotorPos = 0;
+    this.turnMotorSpeed = 0;
   }
 
   public double getDrivePosition() {
@@ -92,7 +103,7 @@ public class SwerveModule extends SubsystemBase {
         return;
     }
     state.optimize(Rotation2d.fromRadians(getTurningPosition()));
-    driveMotor.set(state.speedMetersPerSecond / CustomSwerveModuleConstants.maxMotorSpeed); 
+    driveMotor.set(state.speedMetersPerSecond / CustomSwerveModuleConstants.maxDriveMotorSpeed); 
     turnMotor.set(turningPidController.calculate(getTurningPosition(), state.angle.getRadians()));
     DogLog.log("Swerve Module State as a string", state.toString());
   }

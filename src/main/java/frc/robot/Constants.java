@@ -25,10 +25,11 @@ public final class Constants {
 
   public static class CustomSwerveModuleConstants {
     public static final double kPTurning = 0.1;
-    public static final double maxMotorSpeed = 1; // meters/sec
+    public static final double maxDriveMotorSpeed = 1; // meters/sec
   }
 
   public static class SwerveConstants {
+    public static class IDs {
     public static final int FLdriveMotorID = 0;
     public static final int FRdriveMotorID = 1;
     public static final int BLdriveMotorID = 2;
@@ -43,7 +44,10 @@ public final class Constants {
     public static final int FRencoderID = 9;
     public static final int BLencoderID = 10;
     public static final int BRencoderID = 11;
-    
+    public static final int gyroID = 12;
+    }
+
+    public static class Configs {
     public static final TalonFXConfiguration FLdriveMotorConfig = new TalonFXConfiguration().withMotorOutput(new MotorOutputConfigs().withInverted(InvertedValue.Clockwise_Positive));
     public static final TalonFXConfiguration FRdriveMotorConfig = new TalonFXConfiguration().withMotorOutput(new MotorOutputConfigs().withInverted(InvertedValue.Clockwise_Positive));
     public static final TalonFXConfiguration BLdriveMotorConfig = new TalonFXConfiguration().withMotorOutput(new MotorOutputConfigs().withInverted(InvertedValue.Clockwise_Positive));
@@ -58,7 +62,17 @@ public final class Constants {
     public static final CANcoderConfiguration FRencoderConfig = new CANcoderConfiguration().withMagnetSensor(new MagnetSensorConfigs().withMagnetOffset(0).withSensorDirection(null));
     public static final CANcoderConfiguration BLencoderConfig = new CANcoderConfiguration().withMagnetSensor(new MagnetSensorConfigs().withMagnetOffset(0).withSensorDirection(null));
     public static final CANcoderConfiguration BRencoderConfig = new CANcoderConfiguration().withMagnetSensor(new MagnetSensorConfigs().withMagnetOffset(0).withSensorDirection(null));
+    }
 
-    public static final int gyroID = 12;
+    public static class Limits {
+    public static final double deadband = 0.1;
+
+    public static final double maxAccelerationMetersPerSecond = 5.0;
+
+    public static class Teleop {
+      public static final double maxDriveMotorSpeedMetersPerSecond = 1.0;
+      public static final double maxTurnMotorSpeedRadiansPerSecond = 8 * Math.PI; // 4 full rotations
+    }
+    }
   }
 }

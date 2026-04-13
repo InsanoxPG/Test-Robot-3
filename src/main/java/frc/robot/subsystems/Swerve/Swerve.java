@@ -7,6 +7,7 @@ package frc.robot.subsystems.Swerve;
 import com.ctre.phoenix6.hardware.Pigeon2;
 
 import dev.doglog.DogLog;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.AnalogGyro;
@@ -16,38 +17,42 @@ import frc.robot.Constants.SwerveConstants;
 
 public class Swerve extends SubsystemBase {
   private final SwerveModule frontLeft = new SwerveModule(
-    SwerveConstants.FLdriveMotorID,
-    SwerveConstants.FLturnMotorID, 
-    SwerveConstants.FLencoderID, 
-    SwerveConstants.FLencoderConfig, 
-    SwerveConstants.FLdriveMotorConfig, 
-    SwerveConstants.FLturnMotorConfig);
+    SwerveConstants.IDs.FLdriveMotorID,
+    SwerveConstants.IDs.FLturnMotorID, 
+    SwerveConstants.IDs.FLencoderID, 
+    SwerveConstants.Configs.FLencoderConfig, 
+    SwerveConstants.Configs.FLdriveMotorConfig, 
+    SwerveConstants.Configs.FLturnMotorConfig,
+    0, 0, 0, 0);
 
   private final SwerveModule frontRight = new SwerveModule(
-    SwerveConstants.FRdriveMotorID,
-    SwerveConstants.FRturnMotorID, 
-    SwerveConstants.FRencoderID, 
-    SwerveConstants.FRencoderConfig, 
-    SwerveConstants.FRdriveMotorConfig, 
-    SwerveConstants.FRturnMotorConfig);
+    SwerveConstants.IDs.FRdriveMotorID,
+    SwerveConstants.IDs.FRturnMotorID, 
+    SwerveConstants.IDs.FRencoderID, 
+    SwerveConstants.Configs.FRencoderConfig, 
+    SwerveConstants.Configs.FRdriveMotorConfig, 
+    SwerveConstants.Configs.FRturnMotorConfig,
+    0, 0, 0, 0);
 
   private final SwerveModule backLeft = new SwerveModule(
-    SwerveConstants.BLdriveMotorID,
-    SwerveConstants.BLturnMotorID, 
-    SwerveConstants.BLencoderID, 
-    SwerveConstants.BLencoderConfig, 
-    SwerveConstants.BLdriveMotorConfig, 
-    SwerveConstants.BLturnMotorConfig);
+    SwerveConstants.IDs.BLdriveMotorID,
+    SwerveConstants.IDs.BLturnMotorID, 
+    SwerveConstants.IDs.BLencoderID, 
+    SwerveConstants.Configs.BLencoderConfig, 
+    SwerveConstants.Configs.BLdriveMotorConfig, 
+    SwerveConstants.Configs.BLturnMotorConfig,
+    0, 0, 0, 0);
   
   private final SwerveModule backRight = new SwerveModule(
-    SwerveConstants.BRdriveMotorID,
-    SwerveConstants.BRturnMotorID, 
-    SwerveConstants.BRencoderID, 
-    SwerveConstants.BRencoderConfig, 
-    SwerveConstants.BRdriveMotorConfig, 
-    SwerveConstants.BRturnMotorConfig);
+    SwerveConstants.IDs.BRdriveMotorID,
+    SwerveConstants.IDs.BRturnMotorID, 
+    SwerveConstants.IDs.BRencoderID, 
+    SwerveConstants.Configs.BRencoderConfig, 
+    SwerveConstants.Configs.BRdriveMotorConfig, 
+    SwerveConstants.Configs.BRturnMotorConfig,
+    0, 0, 0, 0);
   
-  private Pigeon2 gyro = new Pigeon2(SwerveConstants.gyroID);
+  private Pigeon2 gyro = new Pigeon2(SwerveConstants.IDs.gyroID);
   
   public Swerve() {
     // reset gyro in another thread after 1 second of delay
@@ -64,6 +69,10 @@ public class Swerve extends SubsystemBase {
     return Math.IEEEremainder(gyro.getRotation2d().getDegrees(), 360);
   }
 
+  public Rotation2d getRotation2d() {
+    return Rotation2d.fromDegrees(getHeading());  
+  }
+
   public void stopModules() {
     frontLeft.stop();
     frontRight.stop();
@@ -72,7 +81,7 @@ public class Swerve extends SubsystemBase {
   }
 
   public void setModules(SwerveModuleState[] desiredStates) {
-    SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, CustomSwerveModuleConstants.maxMotorSpeed);
+    SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, CustomSwerveModuleConstants.maxDriveMotorSpeed);
     frontLeft.setState(desiredStates[0]);
     frontRight.setState(desiredStates[1]);
     backLeft.setState(desiredStates[2]);
